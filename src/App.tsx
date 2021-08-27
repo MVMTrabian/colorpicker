@@ -1,24 +1,15 @@
-import React from 'react'
-
 import { BOXES, NUMBER_OF_COLORS } from './constants'
 import { useLocalStorage, useSelectedItems } from './hooks'
-import { getContrast, getRandomColor } from './utils'
-import { Box, Item, Storage } from './types'
-
-// newArray.fill(null) // Very Object-Oriented (imperative expression)
-const initialArray = new Array(NUMBER_OF_COLORS).fill(null)
-
-// generateing initial color arrays.
-const colorArray1 = initialArray.map((_item, _itemIndex, _origialArray) => {
-  return getRandomColor()
-})
-
-const colorArray2 = initialArray.map(() => {
-  return getRandomColor()
-})
+import { getColorArray, getRandomColor } from './utils'
+import { Item, Storage } from './types'
+import { Layout, List } from './components'
 
 // This assigns the color of all the buttons to a single random color.
-const buttonColor = getRandomColor()
+export const buttonColor = getRandomColor()
+
+const colorArray1 = getColorArray(NUMBER_OF_COLORS)
+
+const colorArray2 = getColorArray(NUMBER_OF_COLORS)
 
 const App = () => {
   //Creates the app from previous functions and variables
@@ -170,113 +161,6 @@ const App = () => {
 }
 
 export default App
-
-//do not edit, if I need to edit this I'm on the wrong track
-const Layout: React.FC = ({ children }) => {
-  //Sets the layout container of the app
-  return (
-    <div
-      style={{
-        minHeight: '100vh',
-        width: '100vw',
-        backgroundColor: '#fff',
-        display: 'grid',
-        justifyContent: 'center',
-        alignItems: 'center',
-      }}
-    >
-      {children}
-    </div>
-  )
-}
-
-const List = ({
-  //calls outside items so they can function within this variable
-  box,
-  listItems,
-  buttonLabel,
-  onItemClick,
-  additionalActions,
-}: {
-  box?: Box
-  listItems: Item[]
-  buttonLabel: string
-  onItemClick: (item: Item) => void
-  additionalActions?: {
-    buttonLabel: string
-    onItemClick: (item: Item) => void
-  }[]
-  //voids an item from the selected items list upon activation
-}) => {
-  return (
-    <div
-      style={{
-        backgroundColor: '#fff',
-        gridArea: box?.gridArea,
-        display: 'grid',
-        gridTemplateRows: `35px repeat(${listItems.length}, 50px)`,
-        gap: 10,
-        padding: 10,
-        borderRadius: 10,
-      }}
-    >
-      <div
-        style={{
-          fontSize: 24,
-          fontWeight: 'bold',
-        }}
-      >
-        {box?.name}
-      </div>
-      {listItems.map((listItem) => (
-        <div
-          style={{
-            //generates the style of the list items
-
-            color: getContrast(listItem.color),
-            textAlign: 'center',
-            backgroundColor: listItem.color,
-            borderRadius: 10,
-            display: 'grid',
-            gridTemplateColumns: '4fr 1fr',
-            alignItems: 'center',
-            padding: '5px 10px',
-          }}
-        >
-          <div>{listItem.color}</div>
-          {additionalActions?.map((action) => {
-            return (
-              <button
-                style={{
-                  height: '80%',
-                  borderRadius: 10,
-                  backgroundColor: buttonColor,
-                  border: 'none',
-                  color: getContrast(buttonColor),
-                }}
-                onClick={() => action.onItemClick(listItem)}
-              >
-                {action.buttonLabel}
-              </button>
-            )
-          })}
-          <button
-            style={{
-              height: '80%',
-              borderRadius: 10,
-              backgroundColor: buttonColor,
-              border: 'none',
-              color: getContrast(buttonColor),
-            }}
-            onClick={() => onItemClick(listItem)}
-          >
-            {buttonLabel}
-          </button>
-        </div>
-      ))}
-    </div>
-  )
-}
 
 // type Color = {
 //   colorCode: string

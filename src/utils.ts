@@ -64,3 +64,13 @@ export const getContrast = (hexcolor: string): 'black' | 'white' => {
   // YIQ below 128 is dark, and contrasts with white
   return yiqRatio >= 128 ? 'black' : 'white'
 }
+
+export const getColorArray = (length: number) => {
+  // newArray.fill(null) // Very Object-Oriented (imperative expression)
+  const initialArray = new Array(length).fill(null)
+
+  // generateing initial color arrays.
+  return initialArray.map(() => {
+    return getRandomColor()
+  })
+}

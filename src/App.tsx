@@ -4,12 +4,11 @@ import { getColorArray, getRandomColor } from './utils'
 import { Item, Storage } from './types'
 import { Layout, List } from './components'
 
+import { SketchPicker } from 'react-color'
+import { useState } from 'react'
+
 // This assigns the color of all the buttons to a single random color.
 export const buttonColor = getRandomColor()
-
-const colorArray1 = getColorArray(NUMBER_OF_COLORS)
-
-const colorArray2 = getColorArray(NUMBER_OF_COLORS)
 
 const App = () => {
   //Creates the app from previous functions and variables
@@ -40,6 +39,14 @@ const App = () => {
 
   // destructures the current local storage object.
   const { itemLists: savedLists } = currentStorage ?? { itemLists: [] }
+
+  // creates a piece of state for the color picker to update.
+  const [colorPickerColor, setColorPickerColor] = useState('#acacac')
+
+  // create a piece of state to track the generated colors
+  const [generatedColors, setGeneratedColors] = useState(
+    getColorArray(NUMBER_OF_COLORS),
+  )
 
   // function for saving a new color list
   const saveColorList = (list: Item[]) => {
@@ -97,8 +104,16 @@ const App = () => {
     setSelectedLists([])
   }
 
+  const refreshColors = () => {
+    setGeneratedColors(getColorArray(NUMBER_OF_COLORS))
+  }
+
+  const gradientString = `linear-gradient(${selectedItems
+    .map((item) => item.color)
+    .join(', ')})`
+
   return (
-    <Layout>
+    <Layout gradient={gradientString}>
       <button onClick={reset}>Reset</button>
       <div
         style={{
@@ -117,22 +132,42 @@ const App = () => {
           padding: 10,
         }}
       >
-        <List
+        {/* <List
           box={BOXES[0]}
           listItems={colorArray1.map((color) => {
             return { name: 'name', color, id: Date.now() }
           })}
           onItemClick={addSelectedItem}
           buttonLabel="add"
-        />
+        /> */}
+        <div>
+          <SketchPicker
+            color={colorPickerColor}
+            onChangeComplete={(color) => {
+              setColorPickerColor(color.hex)
+            }}
+          />
+          <button
+            onClick={() =>
+              addSelectedItem({
+                name: colorPickerColor,
+                id: Date.now(),
+                color: colorPickerColor,
+              })
+            }
+          >
+            Add Color
+          </button>
+        </div>
         <List
           box={BOXES[1]}
-          listItems={colorArray2.map((color) => {
+          listItems={generatedColors.map((color) => {
             return { name: 'name', color, id: Date.now() }
           })}
           onItemClick={addSelectedItem}
           buttonLabel="add"
         />
+        <button onClick={refreshColors}>refresh colors</button>
         <List
           box={BOXES[2]}
           listItems={selectedItems}
@@ -140,6 +175,7 @@ const App = () => {
           buttonLabel="remove"
         />
         <button onClick={() => saveColorList(selectedItems)}>Save</button>
+        <div>background-color: {gradientString};</div>
         <List
           box={BOXES[3]}
           listItems={savedListsItems}

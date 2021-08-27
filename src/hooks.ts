@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react'
-import { Item } from './types'
 
 /**
  * A Custom hook used to manage a set of selected Item objects.
@@ -8,17 +7,17 @@ import { Item } from './types'
  * be selected at a time
  * @returns selected Items array and functions for updating it.
  */
-export const useSelectedItems = (
-  initialSelectedItems: Item[] = [{ name: 'white', color: '#FFFFFF', id: 0 }],
+export function useSelectedItems<IdentifiableItem extends { id: number }>(
+  initialSelectedItems: IdentifiableItem[],
   singleSelect?: boolean,
-) => {
+) {
   //creates a constant variable for selected items
   // useState(initialState) is a react hook that will keep track of state for us
   // It returns an array containing the state data in the first position,
   // and a function in the second position for updating that state data.
   // this is usually written in this form:
   // const [state, setState] = useState<StateType>(initialState);
-  const [selectedItems, setSelectedItems] = useState<Item[]>(
+  const [selectedItems, setSelectedItems] = useState<IdentifiableItem[]>(
     initialSelectedItems,
   )
 
@@ -27,7 +26,7 @@ export const useSelectedItems = (
   // like .filter(), .map() accepts a function (callback) to be called
   // on each element in the mapped array. The returned array is the result of calling
   // the callback function on every member of the array.
-  const selectedColors = selectedItems.map((item) => item.color)
+  const selectedIds = selectedItems.map((item) => item.id)
 
   /**
    * Adds an Item to the selectedItemsArray.
@@ -35,10 +34,10 @@ export const useSelectedItems = (
    * @param item Item The Item to be added to the selectedItems
    * @returns void
    */
-  const addSelectedItem = (item: Item) => {
+  const addSelectedItem = (item: IdentifiableItem) => {
     // Check if the item already exists in the selectedColors array.
     // if so, stop running this function and return undefined.
-    if (selectedColors.includes(item.color)) return
+    if (selectedIds.includes(item.id)) return
 
     // Replaces (updates) the selected items.
     // if `singleSelect` is true, the new selectedItems array will
@@ -52,14 +51,14 @@ export const useSelectedItems = (
    * @param item Item The Item to be added to the selectedItems
    * @returns void
    */
-  const removeSelectedItem = (item: Item) => {
+  const removeSelectedItem = (item: IdentifiableItem) => {
     if (singleSelect) {
       // If singleSelect is true, set the selected items to an empty array.
       setSelectedItems([])
     } else {
       // otherwise, remove the item from the selectedItems array
       const newItems = selectedItems.filter((selectedItem) => {
-        return selectedItem.color !== item.color
+        return selectedItem.id !== item.id
       })
 
       // Then, update (replace) the selectedItems.

@@ -1,11 +1,13 @@
 import { BOXES, NUMBER_OF_COLORS } from './constants'
 import { useLocalStorage, useSelectedItems } from './hooks'
 import { getColorArray, getRandomColor } from './utils'
-import { Item, Storage } from './types'
+import { ColorItem, ColorItemList, ColorListStorage } from './types'
 import { Layout, List } from './components'
 
 import { SketchPicker } from 'react-color'
 import { useState } from 'react'
+import Slider from 'rc-slider'
+import 'rc-slider/assets/index.css'
 
 // This assigns the color of all the buttons to a single random color.
 export const buttonColor = getRandomColor()
@@ -18,7 +20,7 @@ const App = () => {
   // If local storage in 'griddemo' doesn't yet exist, create
   // it with { itemLists: []}
   const { currentStorage, updateStorage, clearStorage } = useLocalStorage<
-    Storage // this is the type of the object we are keeping in storage
+    ColorListStorage // this is the type of the object we are keeping in storage
   >('griddemo', { itemLists: [] })
 
   // sets up selected items for the main color list
@@ -27,7 +29,7 @@ const App = () => {
     addSelectedItem,
     removeSelectedItem,
     setSelectedItems,
-  } = useSelectedItems([])
+  } = useSelectedItems<ColorItem>([])
 
   // sets up selectedItems for the saved color lists
   // these are renamed so they don't conflict with the ones above
@@ -35,7 +37,7 @@ const App = () => {
   const {
     removeSelectedItem: removeSelectedList,
     setSelectedItems: setSelectedLists,
-  } = useSelectedItems([], true)
+  } = useSelectedItems<ColorItemList>([], true)
 
   // destructures the current local storage object.
   const { itemLists: savedLists } = currentStorage ?? { itemLists: [] }
@@ -48,11 +50,27 @@ const App = () => {
     getColorArray(NUMBER_OF_COLORS),
   )
 
+  // create a piece of state to track the generated colors
+  const [rotation, setRotation] = useState(0)
+
+  const gradientString = `linear-gradient(${rotation}deg, ${selectedItems
+    .map((item) => item.color)
+    .join(', ')})`
+
   // function for saving a new color list
-  const saveColorList = (list: Item[]) => {
+  const saveColorList = (list: ColorItem[]) => {
     if (currentStorage) {
       updateStorage({
-        itemLists: [...currentStorage.itemLists, { id: Date.now(), list }],
+        itemLists: [
+          ...currentStorage.itemLists,
+          {
+            id: Date.now(),
+            list,
+            backgroundColor: list[0].backgroundColor,
+            backgroundImage: gradientString,
+            name: '',
+          },
+        ],
       })
     }
   }
@@ -81,19 +99,21 @@ const App = () => {
   const loadColorList = (listId: number) => {
     const list = getColorList(listId)
     if (list) {
-      setSelectedLists([
-        { ...list, name: listId.toString(), color: list.list[0].color },
-      ])
+      setSelectedLists([list])
       setSelectedItems(list.list)
     }
   }
 
   // sets up Item objects for each color list in local storage (for display)
-  const savedListsItems: Item[] = savedLists.map((list) => {
+  const savedListsItems: ColorItemList[] = savedLists.map((list, listIndex) => {
     return {
-      name: 'list ' + list.id.toString(),
+      name: 'list ' + (listIndex + 1).toString(),
       color: list.list[0].color,
       id: list.id,
+      position: 0,
+      backgroundColor: list.list[0].backgroundColor ?? '#ffffff',
+      backgroundImage: list.backgroundImage,
+      list: list.list,
     }
   })
 
@@ -108,13 +128,8 @@ const App = () => {
     setGeneratedColors(getColorArray(NUMBER_OF_COLORS))
   }
 
-  const gradientString = `linear-gradient(${selectedItems
-    .map((item) => item.color)
-    .join(', ')})`
-
   return (
     <Layout gradient={gradientString}>
-      <button onClick={reset}>Reset</button>
       <div
         style={{
           display: 'grid',
@@ -132,58 +147,67 @@ const App = () => {
           padding: 10,
         }}
       >
-        {/* <List
-          box={BOXES[0]}
-          listItems={colorArray1.map((color) => {
-            return { name: 'name', color, id: Date.now() }
-          })}
-          onItemClick={addSelectedItem}
-          buttonLabel="add"
-        /> */}
         <div>
-          <SketchPicker
-            color={colorPickerColor}
-            onChangeComplete={(color) => {
-              setColorPickerColor(color.hex)
-            }}
-          />
+          <div>
+            <SketchPicker
+              color={colorPickerColor}
+              onChangeComplete={(color) => {
+                setColorPickerColor(color.hex)
+              }}
+            />
+            <Slider
+              value={rotation}
+              onChange={(value) => setRotation(value)}
+              min={0}
+              max={360}
+            />
+          </div>
           <button
             onClick={() =>
               addSelectedItem({
                 name: colorPickerColor,
                 id: Date.now(),
                 color: colorPickerColor,
+                backgroundColor: colorPickerColor,
+                position: 0,
               })
             }
           >
             Add Color
           </button>
         </div>
-        <List
+        <List<{}, ColorItem>
           box={BOXES[1]}
           listItems={generatedColors.map((color) => {
-            return { name: 'name', color, id: Date.now() }
+            return {
+              name: color,
+              color,
+              id: Date.now(),
+              backgroundColor: color,
+              position: 0,
+            } as ColorItem
           })}
           onItemClick={addSelectedItem}
           buttonLabel="add"
         />
         <button onClick={refreshColors}>refresh colors</button>
-        <List
+        <List<{}, ColorItem>
           box={BOXES[2]}
           listItems={selectedItems}
           onItemClick={removeSelectedItem}
           buttonLabel="remove"
         />
+
         <button onClick={() => saveColorList(selectedItems)}>Save</button>
         <div>background-color: {gradientString};</div>
-        <List
+        <List<{}, ColorItemList>
           box={BOXES[3]}
           listItems={savedListsItems}
           onItemClick={(item) => loadColorList(item.id)}
           buttonLabel="Load"
           additionalActions={[
             {
-              buttonLabel: 'remove',
+              buttonLabel: 'Delete',
               onItemClick: (item) => {
                 removeSelectedList(item)
                 removeColorList(item.id)

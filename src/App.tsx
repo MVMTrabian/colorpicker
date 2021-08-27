@@ -48,29 +48,35 @@ const App = () => {
   } = useSelectedItems([], true)
 
   // destructures the current local storage object.
-  const { itemLists: savedLists } = currentStorage
+  const { itemLists: savedLists } = currentStorage ?? { itemLists: [] }
 
   // function for saving a new color list
   const saveColorList = (list: Item[]) => {
-    updateStorage({
-      itemLists: [...currentStorage.itemLists, { id: Date.now(), list }],
-    })
+    if (currentStorage) {
+      updateStorage({
+        itemLists: [...currentStorage.itemLists, { id: Date.now(), list }],
+      })
+    }
   }
 
   // function for retrieving a color list from currentStorage
   const getColorList = (listId: number) => {
-    return currentStorage.itemLists.find((list) => {
-      return list.id === listId
-    })
+    if (currentStorage) {
+      return currentStorage.itemLists.find((list) => {
+        return list.id === listId
+      })
+    }
   }
 
   // function for removing a color list from local storage.
   const removeColorList = (listId: number) => {
-    updateStorage({
-      itemLists: currentStorage.itemLists.filter((list) => {
-        return list.id !== listId
-      }),
-    })
+    if (currentStorage) {
+      updateStorage({
+        itemLists: currentStorage.itemLists.filter((list) => {
+          return list.id !== listId
+        }),
+      })
+    }
   }
 
   // function for getting a list from local storage and setting it to the main list.

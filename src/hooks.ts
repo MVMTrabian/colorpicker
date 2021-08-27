@@ -89,10 +89,10 @@ export function useLocalStorage<StorageType extends {}>(
   const rawLocalString = window.localStorage.getItem(storageKey)
 
   // See comment about useState() above in useSelectedItems()
-  const [currentStorage, setCurrentStorage] = useState<StorageType>(
+  const [currentStorage, setCurrentStorage] = useState<StorageType | undefined>(
     // if the local storage string is not null or empty
     // Parse it into an object, if not use an empty object.
-    rawLocalString ? JSON.parse(rawLocalString) : {},
+    rawLocalString ? JSON.parse(rawLocalString) : undefined,
   )
 
   /**
@@ -105,6 +105,7 @@ export function useLocalStorage<StorageType extends {}>(
       storageKey,
       newValue ? JSON.stringify(newValue) : '',
     )
+    setCurrentStorage(newValue)
   }
 
   /**
@@ -112,6 +113,7 @@ export function useLocalStorage<StorageType extends {}>(
    */
   const clearStorage = () => {
     window.localStorage.removeItem(storageKey)
+    setCurrentStorage(undefined)
   }
 
   // This effect initializes local storage, if it does not already exist
@@ -122,7 +124,7 @@ export function useLocalStorage<StorageType extends {}>(
 
       setCurrentStorage(initialStorage ?? ({} as StorageType))
     }
-  }, [])
+  }, [currentStorage, initialStorage, storageKey])
 
   return {
     currentStorage, // The current state of local storage as a JSON object

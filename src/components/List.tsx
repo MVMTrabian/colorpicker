@@ -1,4 +1,4 @@
-import { buttonColor } from '../App'
+import { Button, buttonColor } from '../App'
 import { Box, Item } from '../types'
 import { getContrast } from '../utils'
 
@@ -6,6 +6,9 @@ type ListProps<CustomBoxProps, CustomItemProps> = {
   box?: Box<CustomBoxProps>
   listItems: Item<CustomItemProps>[]
   buttonLabel: string
+  listTitle?: string | JSX.Element
+  itemHeight?: number
+  titleHeight?: number
   onItemClick: (item: Item<CustomItemProps>) => void
   additionalActions?: {
     buttonLabel: string
@@ -18,21 +21,31 @@ export function List<CustomBoxProps, ItemType extends Item<{}>>({
   //calls outside items so they can function within this variable
   box,
   listItems,
+  listTitle,
   buttonLabel,
   onItemClick,
   additionalActions,
+  itemHeight = 50,
+  titleHeight = 35,
 }: ListProps<CustomBoxProps, ItemType>) {
-  const itemConfigs = { buttonLabel, onItemClick, additionalActions }
+  const itemConfigs = {
+    buttonLabel,
+    onItemClick,
+    additionalActions,
+  }
   return (
     <div
       style={{
         backgroundColor: '#fff',
         gridArea: box?.gridArea,
         display: 'grid',
-        gridTemplateRows: `35px repeat(${listItems.length}, 50px)`,
+        gridTemplateRows: `${titleHeight + 'px'} repeat(${listItems.length}, ${
+          itemHeight + 'px'
+        })`,
         gap: 10,
         padding: 10,
         borderRadius: 10,
+        overflowY: 'scroll',
       }}
     >
       <div
@@ -41,7 +54,7 @@ export function List<CustomBoxProps, ItemType extends Item<{}>>({
           fontWeight: 'bold',
         }}
       >
-        {box?.name}
+        {listTitle}
       </div>
       {listItems.map((listItem) => (
         <ItemDisplay listItem={listItem} {...itemConfigs} />
@@ -79,45 +92,51 @@ function ItemDisplay<ItemType extends Item<{}>>({
         borderRadius: 10,
         display: 'grid',
         gridTemplateColumns: '4fr 1fr',
+        gridTemplateAreas: `'title   buttons'
+                            'control buttons`,
         alignItems: 'center',
         padding: '5px 10px',
       }}
     >
-      <div>{listItem.name}</div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
+      <div style={{ gridArea: 'title' }}>{listItem.name}</div>
+      <div
+        style={{
+          gridArea: 'buttons',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 3,
+        }}
+      >
         {additionalActions?.map((action) => {
           return (
-            <button
+            <Button
               style={{
                 display: 'flex',
                 justifyContent: 'center',
                 flex: 1,
-                borderRadius: 10,
-                backgroundColor: buttonColor,
                 border: 'none',
                 color: getContrast(buttonColor),
               }}
               onClick={() => action.onItemClick(listItem)}
             >
               {action.buttonLabel}
-            </button>
+            </Button>
           )
         })}
-        <button
+        <Button
           style={{
             display: 'flex',
             flex: 1,
             justifyContent: 'center',
-            borderRadius: 10,
-            backgroundColor: buttonColor,
             border: 'none',
             color: getContrast(buttonColor),
           }}
           onClick={() => onItemClick(listItem)}
         >
           {buttonLabel}
-        </button>
+        </Button>
       </div>
+      <div style={{ gridArea: 'control' }}></div>
     </div>
   )
 }

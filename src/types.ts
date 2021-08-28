@@ -2,7 +2,7 @@ export type BaseItemProps = {
   /**
    * unique identifier for this item on the page.
    */
-  id: number
+  id: string
   /**
    * Acts as a label
    */
@@ -39,10 +39,6 @@ export type ColorItem = Item<ColorItemProps>
  */
 export type Box<CustomBoxProps> = CustomBoxProps & {
   /**
-   * Label displayed in the area
-   */
-  name: string
-  /**
    * for use with gridTemplateArea
    */
   gridArea: string
@@ -60,7 +56,7 @@ export type ItemList<
   /**
    * Unique identifier on the page.
    */
-  id: number
+  id: string
   /**
    * The Items in this tracked list.
    */
@@ -70,7 +66,7 @@ export type ItemList<
   backgroundImage?: string
 }
 
-export type ColorItemList = ItemList<{}, ColorItem>
+export type ColorItemList = ItemList<{ rotation: number }, ColorItem>
 
 /**
  * Describes the local storage object
@@ -79,4 +75,24 @@ export type Storage<CustomListProps, ItemType extends Item<{}>> = {
   [index: string]: ItemList<CustomListProps, ItemType>[]
 }
 
-export type ColorListStorage = Storage<{}, ColorItem>
+export type ColorListStorage = Storage<{ rotation: number }, ColorItem>
+
+export type ColorContextType = {
+  selectedColors: ColorItem[]
+  randomColors: ColorItem[]
+  savedListsItems: ColorItemList[]
+  colorPicker: [string, React.Dispatch<React.SetStateAction<string>>]
+  colorHelpers: {
+    reset: VoidFunction
+    getColorList: (listId: string) => ColorItemList | undefined
+    removeColorList: (listId: string) => void
+    saveColorList: (list: ColorItem[], rotation: number) => void
+    loadColorList: (listId: string) => void
+    refreshColors: VoidFunction
+    addSelectedColor: (item: ColorItem) => void
+    removeSelectedColor: (item: ColorItem) => void
+    removeSelectedList: (item: ColorItemList) => void
+    rotate: (to: number) => void
+    rotation: number
+  }
+}

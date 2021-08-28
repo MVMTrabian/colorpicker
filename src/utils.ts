@@ -1,3 +1,8 @@
+import { v4 } from 'uuid'
+import { ColorItem } from './types'
+const getRandomNumber = (scale: number) => {
+  return Math.floor(Math.random() * scale)
+}
 /**
  * Gets a random color code.
  * @returns a random hexdecimal color code
@@ -16,7 +21,7 @@ export const getRandomColor = () => {
   // Assign the letters one-by-one until all 6 are assigned
   for (let i = 0; i < 6; i++) {
     // Get 6 randomly-selected character from the letters string
-    color += letters[Math.floor(Math.random() * 16)]
+    color += letters[getRandomNumber(16)]
   }
 
   return color
@@ -73,4 +78,20 @@ export const getColorArray = (length: number) => {
   return initialArray.map(() => {
     return getRandomColor()
   })
+}
+
+export const getNewId = () => {
+  return v4()
+}
+
+export const getGradientString = ({
+  colors,
+  rotation,
+}: {
+  rotation: number
+  colors: ColorItem[]
+}) => {
+  return `linear-gradient(${rotation}deg, ${colors
+    .map((item) => item.color + (item.position > 0 ? ' %' + item.position : ''))
+    .join(', ')})`
 }

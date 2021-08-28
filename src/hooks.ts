@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react'
  * be selected at a time
  * @returns selected Items array and functions for updating it.
  */
-export function useSelectedItems<IdentifiableItem extends { id: number }>(
+export function useSelectedItems<IdentifiableItem extends { id: string }>(
   initialSelectedItems: IdentifiableItem[],
   singleSelect?: boolean,
 ) {
